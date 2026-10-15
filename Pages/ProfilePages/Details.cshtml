@@ -1,0 +1,60 @@
+@page
+@model RazorProfiles.Pages.ProfilePages.DetailsModel
+@{
+    ViewData["Title"] = Model.Profile.Name;
+    var initials = string.Concat((Model.Profile.Name ?? "").Split(' ').Select(w => w[0]));
+    var interests = (Model.Profile.Interests ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+}
+
+<div class="card mb-3">
+    <div class="card-body d-flex align-items-center gap-4">
+        <div class="avatar avatar-lg flex-shrink-0">@initials</div>
+        <div>
+            <h1 class="h2 mb-1">@Model.Profile.Name</h1>
+            <p class="text-muted mb-2">@@@Model.Profile.Handle · @Model.Profile.Location</p>
+            <button class="btn btn-sm btn-primary" type="button">Follow</button>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-7">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">About</h2>
+                <!-- data-theme-ai-bio: "theme from my bio" reads this text. It stays in the browser. -->
+                <p class="mb-0" data-theme-ai-bio>@Model.Profile.Bio</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5">Interests</h2>
+                <div class="d-flex flex-wrap gap-2" data-theme-ai-bio>
+                    @foreach (var interest in interests)
+                    {
+                        <span class="badge bg-secondary">@interest</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="h5">Recent posts</h2>
+<div class="row row-cols-1 row-cols-md-3 g-3 mb-3">
+    @foreach (var post in Model.Profile.Posts!.OrderByDescending(p => p.PostedOn))
+    {
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="text-muted small mb-1">@post.PostedOn.ToString("MMM d")</p>
+                    <p class="mb-0">@post.Text</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<a asp-page="/Index">Back to all profiles</a>
