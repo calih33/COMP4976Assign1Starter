@@ -103,7 +103,11 @@ function toPaletteName(value) {
   if (colours[text]) return text;
   const found = colourNames.filter((name) => new RegExp(`\\b${name}\\b`).test(text));
   if (found.length === 1) return found[0];
-  return COLOUR_WORDS[text.replace(/s$/, "")] ?? null; // a plain word like "green" becomes forest
+  // A plain or everyday colour word, like "green", "sea" or "cyan", becomes the closest palette colour.
+  const word = text.replace(/s$/, "");
+  if (COLOUR_WORDS[word]) return COLOUR_WORDS[word];
+  const last = word.split(/\s+/).at(-1); // "deep sea" -> "sea"
+  return COLOUR_WORDS[last] ?? null;
 }
 
 // Pull the JSON out of the AI's answer. Both colours must be names from the palette.
@@ -170,6 +174,13 @@ const COLOUR_WORDS = {
   peach: "coral", purple: "plum", violet: "lavender", lilac: "lavender", yellow: "mustard", gold: "mustard",
   orange: "terracotta", brown: "mocha", coffee: "mocha", tan: "sand", beige: "sand", grey: "slate",
   gray: "slate", black: "charcoal", turquoise: "teal", aqua: "teal",
+  // Other names a small model often uses instead of the palette's names.
+  cyan: "sky", sea: "teal", ocean: "navy", seafoam: "mint", emerald: "forest", jade: "teal", lime: "mint",
+  pine: "forest", moss: "olive", khaki: "sand", ivory: "cream", amber: "mustard", rust: "terracotta",
+  brick: "terracotta", rose: "blush", salmon: "coral", indigo: "navy", midnight: "navy", steel: "slate",
+  silver: "slate", ash: "slate", snow: "white", espresso: "chocolate", caramel: "mocha", stone: "sand",
+  "sky blue": "sky", "sea green": "teal", "ocean blue": "navy", "forest green": "forest", "mint green": "mint",
+  "light gray": "slate", "light grey": "slate",
 };
 const LIGHTER_WORDS = ["light", "pale", "soft", "pastel", "airy"];
 const DARKER_WORDS = ["dark", "deep", "rich"];
@@ -290,7 +301,11 @@ box.querySelector("form").addEventListener("submit", async (e) => {
   e.preventDefault();
   let request = input.value.trim();
   if (!request) return;
-  if (BIO_REQUEST.test(request) && bioText()) {
+  if (BIO_REQUEST.test(request)) {
+    if (!bioText()) {
+      status.textContent = "There's no bio on this page. Open a profile first, then try again.";
+      return;
+    }
     request = `a theme that fits this person: ${bioText()}`;
   }
 
